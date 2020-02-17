@@ -51,7 +51,7 @@ class LeadController extends Controller
         $hasAccess = true; // get action permission based on role
         if ($hasAccess) {
             $searchModel = new LeadSearch();
-            $dataProvider = $searchModel->searchActive(Yii::$app->request->queryParams);
+            $dataProvider = $searchModel->searchCreatedLead(Yii::$app->request->queryParams);
 
             return $this->render('active', [
                 'searchModel' => $searchModel,
@@ -66,7 +66,7 @@ class LeadController extends Controller
         $hasAccess = AccessMaster::hasAccess('allocateTicket'); // get action permission based on role
         if ($hasAccess) {
             $searchModel = new LeadSearch();
-            $dataProvider = $searchModel->searchAllocated(Yii::$app->request->queryParams);
+            $dataProvider = $searchModel->searchAssignedLead(Yii::$app->request->queryParams);
 
             return $this->render('allocated', [
                 'searchModel' => $searchModel,
@@ -125,7 +125,19 @@ class LeadController extends Controller
     * Tabbing section end
     */
 
+    public function actionReopen($id)
+    {
+        $model = $this->findModel($id);
+        if ( !empty($model) ) {
+        //===== update lead status =======//
+            Yii::$app->session->setFlash('success', 'Lead reopned successfully.');
+            $model->status = Lead::Lead_Active; 
+            $model->save();
 
+            return $this->redirect(['/lead']);
+        //=================================//
+        }
+    }
     public function actionView($id)
     {
         $searchModel = new LeadFollowUpSearch();
@@ -137,7 +149,7 @@ class LeadController extends Controller
 
             $followStatus = Lead::Lead_Active;
             $submitButton = Yii::$app->request->post('submit');
-            if ( $submitButton == 'save') {
+            if ( $submitButton == 'save' || $submitButton == 'reopen') {
                 $followStatus = Lead::Lead_Active;
             } else if ( $submitButton == 'reject') {
                 $followStatus = Lead::Lead_Rejected;
@@ -147,15 +159,17 @@ class LeadController extends Controller
                 $followStatus = Lead::Lead_Closed;
             } 
 
-
-
             $leadFollowup->lead_id = $model->id;
-            $leadFollowup->status = $followStatus;
+            $leadFollowup->status = Lead::Lead_Active;
             $leadFollowup->created_by = Yii::$app->user->identity->id;
             $leadFollowup->created_on = date('Y-m-d H:i:s');
             $leadFollowup->updated_by = Yii::$app->user->identity->id;
             $leadFollowup->updated_on = date('Y-m-d H:i:s');
             if ($leadFollowup->save()) {
+                //===== update lead status =======//
+                    $model->status = $followStatus; 
+                    $model->save();
+                //=================================//
                 return $this->redirect(['index']);
             }
             //echo '<pre>'; print_r($leadFollowup->errors); die();
@@ -205,38 +219,40 @@ class LeadController extends Controller
        
         $hasAccess = AccessMaster::hasAccess('addLead'); // get action permission based on role
         if ($hasAccess) { 
-        $model = new Lead();
+            $model = new Lead();
 
-        if ($model->load(Yii::$app->request->post())) {
+            if ($model->load(Yii::$app->request->post())) {
 
-            $model->status = Lead::Lead_Active;
-            $model->created_by = Yii::$app->user->identity->id;
-            $model->created_on = date('Y-m-d H:i:s');
-            $model->updated_by = Yii::$app->user->identity->id;
-            $model->updated_on = date('Y-m-d H:i:s');
+                $model->status = Lead::Lead_Active;
+                $model->created_by = Yii::$app->user->identity->id;
+                $model->created_on = date('Y-m-d H:i:s');
+                $model->updated_by = Yii::$app->user->identity->id;
+                $model->updated_on = date('Y-m-d H:i:s');
 
-            if (isset($_FILES['Lead']) && $_FILES['Lead']['name']['attachment']) {
-                $uploadedFilename = $_FILES['Lead']['name']['attachment'];
-                $fileExt  = pathinfo($uploadedFilename, PATHINFO_EXTENSION);
-                $filename = pathinfo($uploadedFilename, PATHINFO_FILENAME);
-                $filename = preg_replace('/\s+/', '_', $filename);
+                if (isset($_FILES['Lead']) && $_FILES['Lead']['name']['attachment']) {
+                    $uploadedFilename = $_FILES['Lead']['name']['attachment'];
+                    $fileExt  = pathinfo($uploadedFilename, PATHINFO_EXTENSION);
+                    $filename = pathinfo($uploadedFilename, PATHINFO_FILENAME);
+                    $filename = preg_replace('/\s+/', '_', $filename);
 
-                $filename = $filename . '.' . $fileExt;
-                $model->attachment = UploadedFile::getInstance($model, 'attachment');
-                $model->attachment->saveAs(RP_APP_ROOT . '/__uploaded__/lead/' . $filename);
-                $model->attachment = $filename;
+                    $filename = $filename . '.' . $fileExt;
+                    $model->attachment = UploadedFile::getInstance($model, 'attachment');
+                    $model->attachment->saveAs(RP_APP_ROOT . '/__uploaded__/lead/' . $filename);
+                    $model->attachment = $filename;
+                }
+
+                if ($model->save()) {
+                    Yii::$app->session->setFlash('success', 'Lead Created successfully.');
+                    return $this->redirect(['index']);
+                }
             }
 
-            if ($model->save()) {
-                Yii::$app->session->setFlash('success', 'Lead Created successfully.');
-                return $this->redirect(['index']);
-            }
+            return $this->render('create', [
+                'model' => $model,
+            ]);
+        } else {
+            throw new NotFoundHttpException('You are not authorized to view this page.');
         }
-
-        return $this->render('create', [
-            'model' => $model,
-        ]);
-    }
 }
     /**
      * Updates an existing Lead model.
@@ -249,36 +265,38 @@ class LeadController extends Controller
     {
         $hasAccess = AccessMaster::hasAccess('updateLead'); // get action permission based on role
         if ($hasAccess) {
-        $model = $this->findModel($id);
+            $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post())) {
+            if ($model->load(Yii::$app->request->post())) {
 
-            $model->updated_by = Yii::$app->user->identity->id;
-            $model->updated_on = date('Y-m-d H:i:s');
+                $model->updated_by = Yii::$app->user->identity->id;
+                $model->updated_on = date('Y-m-d H:i:s');
 
-            if (isset($_FILES['Lead']) && $_FILES['Lead']['name']['attachment']) {
-                $uploadedFilename = $_FILES['Lead']['name']['attachment'];
-                $fileExt  = pathinfo($uploadedFilename, PATHINFO_EXTENSION);
-                $filename = pathinfo($uploadedFilename, PATHINFO_FILENAME);
-                $filename = preg_replace('/\s+/', '_', $filename);
+                if (isset($_FILES['Lead']) && $_FILES['Lead']['name']['attachment']) {
+                    $uploadedFilename = $_FILES['Lead']['name']['attachment'];
+                    $fileExt  = pathinfo($uploadedFilename, PATHINFO_EXTENSION);
+                    $filename = pathinfo($uploadedFilename, PATHINFO_FILENAME);
+                    $filename = preg_replace('/\s+/', '_', $filename);
 
-                $filename = $filename . '.' . $fileExt;
-                $model->attachment = UploadedFile::getInstance($model, 'attachment');
-                $model->attachment->saveAs(RP_APP_ROOT . '/__uploaded__/lead/' . $filename);
-                $model->attachment = $filename;
+                    $filename = $filename . '.' . $fileExt;
+                    $model->attachment = UploadedFile::getInstance($model, 'attachment');
+                    $model->attachment->saveAs(RP_APP_ROOT . '/__uploaded__/lead/' . $filename);
+                    $model->attachment = $filename;
+                }
+
+                if ($model->save()) {
+                    Yii::$app->session->setFlash('success', 'Lead Updated successfully.');
+                    return $this->redirect(['index']);
+                }
             }
 
-            if ($model->save()) {
-                Yii::$app->session->setFlash('success', 'Lead Updated successfully.');
-                return $this->redirect(['index']);
-            }
+            return $this->render('update', [
+                'model' => $model,
+            ]);
+        }  else {
+            throw new NotFoundHttpException('You are not authorized to view this page.');
         }
-
-        return $this->render('update', [
-            'model' => $model,
-        ]);
     }
-}
     /**
      * Finds the Lead model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.

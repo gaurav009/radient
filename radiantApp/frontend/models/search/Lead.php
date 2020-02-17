@@ -31,16 +31,9 @@ class Lead extends LeadModel
         return Model::scenarios();
     }
 
-    /**
-     * Creates data provider instance with search query applied
-     *
-     * @param array $params
-     *
-     * @return ActiveDataProvider
-     */
-    public function search($params)
+    public function searchCreatedLead($params)
     {
-        $query = LeadModel::find();
+        $query = LeadModel::find()->where(['status' => LeadModel::Lead_Active, 'created_by' => \Yii::$app->user->id]);
 
         // add conditions that should always apply here
 
@@ -87,9 +80,9 @@ class Lead extends LeadModel
         return $dataProvider;
     }
 
-    public function searchActive($params)
+    public function searchAssignedLead($params)
     {
-        $query = LeadModel::find();
+        $query = LeadModel::find()->where(['status' => LeadModel::Lead_Active, 'user_id' => \Yii::$app->user->id]);
 
         // add conditions that should always apply here
 
@@ -135,10 +128,11 @@ class Lead extends LeadModel
 
         return $dataProvider;
     }
+
 
     public function searchClosed($params)
     {
-        $query = LeadModel::find();
+        $query = LeadModel::find()->where(['status' => LeadModel::Lead_Closed]);;
 
         // add conditions that should always apply here
 
@@ -187,7 +181,7 @@ class Lead extends LeadModel
 
     public function searchAllocated($params)
     {
-        $query = LeadModel::find();
+        $query = LeadModel::find()->where(['status' => LeadModel::Lead_Active]);
 
         // add conditions that should always apply here
 
@@ -236,7 +230,7 @@ class Lead extends LeadModel
 
     public function searchScrapped($params)
     {
-        $query = LeadModel::find();
+        $query = LeadModel::find()->where(['status' => LeadModel::Lead_Scrapped]);
 
         // add conditions that should always apply here
 
@@ -285,7 +279,7 @@ class Lead extends LeadModel
 
     public function searchRejected($params)
     {
-        $query = LeadModel::find();
+        $query = LeadModel::find()->where(['status' => LeadModel::Lead_Rejected]);
 
         // add conditions that should always apply here
 

@@ -9,6 +9,7 @@ use frontend\models\CategoryMaster;
 use frontend\models\RoleMaster;
 use frontend\models\BrandMaster;
 use frontend\models\DepartmentMaster;
+use frontend\models\Lead;
 
 $this->title = $model->id;
 $this->params['breadcrumbs'][] = ['label' => 'Leads', 'url' => ['index']];
@@ -21,8 +22,6 @@ $this->params['breadcrumbs'][] = $this->title;
         <li class="nav-item">
             <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Lead Information</a>
         </li>
-        
-        
     </ul>
 
 
@@ -102,7 +101,7 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>	
         </div>
 
-        
+        <?php if ( $model->status == Lead::Lead_Active ) { ?>
             <div class="modal-content">
                                                                         
                 <div class="modal-header no-bd">
@@ -127,6 +126,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                     <?php ActiveForm::end(); ?>
             </div>
+        <?php } ?>
                             
             <?= GridView::widget([
                 'dataProvider' => $dataProvider,
