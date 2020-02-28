@@ -76,11 +76,11 @@ class UserController extends Controller
     public function actionCreate()
     {
         $model = new UserMaster();
-        $userCompany = new UserCompany();
+        // $userCompany = new UserCompany();
 
-        if ($model->load(Yii::$app->request->post()) && $userCompany->load(Yii::$app->request->post())) {
-            
-            if(isset($_FILES['UserCompany']) && $_FILES['UserCompany']['name']['cv']){
+        if ( $model->load(Yii::$app->request->post()) ) {
+            // && $userCompany->load(Yii::$app->request->post())
+            /*if(isset($_FILES['UserCompany']) && $_FILES['UserCompany']['name']['cv']){
                 $uploadedFilename = $_FILES['UserCompany']['name']['cv'];
                 $fileExt  = pathinfo($uploadedFilename, PATHINFO_EXTENSION);
                 $filename = pathinfo($uploadedFilename, PATHINFO_FILENAME);
@@ -90,44 +90,44 @@ class UserController extends Controller
                 $userCompany->cv = UploadedFile::getInstance($userCompany, 'cv');
                 $userCompany->cv->saveAs(RP_APP_ROOT.'/__uploaded__/user/' .$filename);
                 $userCompany->cv = $filename;
-            }
+            }*/
             $model->is_admin = 0;
             $model->status = User::STATUS_ACTIVE;
             $model->created_by = Yii::$app->user->identity->id;
             $model->created_at = time();
             $model->updated_by = Yii::$app->user->identity->id;
             $model->updated_at = time();
-            $model->email = $userCompany->email;
+            //$model->email = $userCompany->email;
             $model->password_hash = Yii::$app->security->generatePasswordHash($model->password);
             $model->auth_key = Yii::$app->security->generateRandomString();
             $model->verification_token = Yii::$app->security->generateRandomString() . '_' . time();
 
 
-            $userCompany->phone = str_replace('-', '', $userCompany->phone);
+            /*$userCompany->phone = str_replace('-', '', $userCompany->phone);
             $userCompany->created_by = Yii::$app->user->identity->id;
             $userCompany->created_on = date('Y-m-d H:i:s');
             $userCompany->updated_by = Yii::$app->user->identity->id;
-            $userCompany->updated_on = date('Y-m-d H:i:s');
+            $userCompany->updated_on = date('Y-m-d H:i:s');*/
             
                 
             $valid = $model->validate();
-            $valid = $userCompany->validate() && $valid;
+            //$valid = $userCompany->validate() && $valid;
 
             if( $valid ){
                 if($model->save()){
-                    $userCompany->user_id = $model->id;
-                    if($userCompany->save()){
+                    //$userCompany->user_id = $model->id;
+                    //if($userCompany->save()){
                         Yii::$app->session->setFlash('success', 'User Created successfully.');
                         return $this->redirect(['index']);
-                    }
+                    //}
                     
-                }
+                } 
             }
         }
 
         return $this->render('create', [
             'model' => $model,
-            'userCompany' => $userCompany
+            // 'userCompany' => $userCompany
         ]);
     }
 
@@ -141,22 +141,21 @@ class UserController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-        $userCompany = UserCompany::findOne(['user_id'=>$id]);
+        // $userCompany = UserCompany::findOne(['user_id'=>$id]);
 
-        if ( $model->load(Yii::$app->request->post()) 
-                && $userCompany->load(Yii::$app->request->post()) ) {
+        if ( $model->load(Yii::$app->request->post())  ) {
 
-            if(isset($_FILES['UserCompany']) && $_FILES['UserCompany']['name']['cv']){
-                $uploadedFilename = $_FILES['UserCompany']['name']['cv'];
-                $fileExt  = pathinfo($uploadedFilename, PATHINFO_EXTENSION);
-                $filename = pathinfo($uploadedFilename, PATHINFO_FILENAME);
-                $filename = preg_replace('/\s+/', '_', $filename);
+            // if(isset($_FILES['UserCompany']) && $_FILES['UserCompany']['name']['cv']){
+            //     $uploadedFilename = $_FILES['UserCompany']['name']['cv'];
+            //     $fileExt  = pathinfo($uploadedFilename, PATHINFO_EXTENSION);
+            //     $filename = pathinfo($uploadedFilename, PATHINFO_FILENAME);
+            //     $filename = preg_replace('/\s+/', '_', $filename);
 
-                $filename = $filename.'.'.$fileExt;
-                $userCompany->cv = UploadedFile::getInstance($userCompany, 'cv');
-                $userCompany->cv->saveAs(RP_APP_ROOT.'/__uploaded__/user/' .$filename);
-                $userCompany->cv = $filename;
-            }
+            //     $filename = $filename.'.'.$fileExt;
+            //     $userCompany->cv = UploadedFile::getInstance($userCompany, 'cv');
+            //     $userCompany->cv->saveAs(RP_APP_ROOT.'/__uploaded__/user/' .$filename);
+            //     $userCompany->cv = $filename;
+            // }
 
             if ($model->password) {
                 $model->password_hash = Yii::$app->security->generatePasswordHash($model->password);
@@ -166,24 +165,24 @@ class UserController extends Controller
             }
             
             $valid = $model->validate();
-            $valid = $userCompany->validate() && $valid;
+            // $valid = $userCompany->validate() && $valid;
 
             if( $valid ){
                 $model->updated_by = Yii::$app->user->identity->id;
                 $model->updated_at = time();
                 if($model->save()){
-                    $userCompany->phone = str_replace('-', '', $userCompany->phone);
-                    if($userCompany->save()){
+                    // $userCompany->phone = str_replace('-', '', $userCompany->phone);
+                    // if($userCompany->save()){
                         Yii::$app->session->setFlash('success', 'User Updated successfully.');
                         return $this->redirect(['index']);
-                    }
+                    // }
                 }
             }
         }
 
         return $this->render('update', [
             'model' => $model,
-            'userCompany' => $userCompany
+            // 'userCompany' => $userCompany
         ]);
     }
     

@@ -18,7 +18,7 @@ class UserMaster extends UserMasterModel
     {
         return [
             [['id', 'agree_tc', 'is_reporting_manager', 'phone_home', 'phone_emergency', 'status', 'is_admin', 'created_at', 'created_by', 'updated_at', 'updated_by'], 'integer'],
-            [['first_name', 'last_name', 'employee_code', 'username', 'auth_key', 'password_hash', 'password_reset_token', 'email', 'address', 'verification_token'], 'safe'],
+            [['first_name', 'last_name', 'employee_code', 'username', 'auth_key', 'password_hash', 'password_reset_token', 'address', 'verification_token'], 'safe'],
         ];
     }
 
@@ -78,7 +78,6 @@ class UserMaster extends UserMasterModel
             ->andFilterWhere(['like', 'auth_key', $this->auth_key])
             ->andFilterWhere(['like', 'password_hash', $this->password_hash])
             ->andFilterWhere(['like', 'password_reset_token', $this->password_reset_token])
-            ->andFilterWhere(['like', 'email', $this->email])
             ->andFilterWhere(['like', 'address', $this->address])
             ->andFilterWhere(['like', 'verification_token', $this->verification_token]);
 

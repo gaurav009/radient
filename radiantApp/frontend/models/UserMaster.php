@@ -3,6 +3,8 @@
 namespace frontend\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
+use common\models\User;
 
 /**
  * This is the model class for table "user".
@@ -44,16 +46,17 @@ class UserMaster extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['first_name', 'username', 'auth_key', 'password_hash', 'country_id', 'state_id', 'city_id', 'email','pin_code', 'is_admin', 'role'], 'required'],
+            [['first_name', 'username', 'auth_key', 'password_hash', 'country_id', 'state_id', 'city_id', 'pin_code', 'is_admin', 'role'], 'required'],
             [['role', 'agree_tc','last_name',  'is_reporting_manager', 'phone_home','address_1','address_2','address_3', 'phone_emergency', 'status', 'is_admin', 'created_at', 'created_by', 'updated_at', 'updated_by'], 'safe'],
             [['first_name', 'last_name', 'username', 'password_hash', 'password_reset_token', 'email', 'address', 'verification_token'], 'string', 'max' => 255],
             [['auth_key'], 'string', 'max' => 32],
 
             [['username'], 'unique'],
             
-            ['email', 'trim'],
-            [['email'], 'unique'],
-            ['email', 'unique', 'targetClass' => '\frontend\models\UserMaster', 'message' => 'This email address has already been taken.'],
+            // ['email', 'required'],
+            // ['email', 'trim'],
+            // [['email'], 'unique'],
+            // ['email', 'unique', 'targetClass' => '\frontend\models\UserMaster', 'message' => 'This email address has already been taken.'],
 
             [['password_reset_token'], 'unique'],
 
@@ -75,7 +78,6 @@ class UserMaster extends \yii\db\ActiveRecord
             'auth_key' => 'Auth Key',
             'password_hash' => 'Password Hash',
             'password_reset_token' => 'Password Reset Token',
-            'email' => 'Email',
             'agree_tc' => 'I Agree the terms and conditions.',
             'is_reporting_manager' => 'Authorized to be a Reporting Manager',
             'phone_home' => 'Phone Home',
@@ -103,5 +105,23 @@ class UserMaster extends \yii\db\ActiveRecord
     public function getUserCompanies()
     {
         return $this->hasMany(UserCompany::className(), ['user_id' => 'id']);
+    }
+
+    public static function getUserOwnCompanies() {
+        $compArray = [];
+
+        $company = UserCompany::find()->where(['user_id'=>Yii::$app->user->id])->all();
+        if ( !empty($company) ) {
+            foreach ( $company as $c ){
+                
+                $compDetail = Company::find()->where(['id'=>$c->company_id])->one();
+                if (!empty($compDetail)) {
+                    $compArray[$compDetail->id] = $compDetail->name;
+                }
+                
+            }
+        }
+        
+        return $compArray;
     }
 }

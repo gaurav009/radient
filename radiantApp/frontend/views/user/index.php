@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
             ],
             'username',
-            'email:email',
+            //'email:email',
             //'auth_key',
             //'password_hash',
             //'password_reset_token',
@@ -67,13 +67,16 @@ $this->params['breadcrumbs'][] = $this->title;
 
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{update}{password}',
+                'template' => '{update}{password}{company}',
                 'buttons'=>[
                     'update' => function ($url, $model) {
-                        return Html::a('<span class="fas fa-pen"></span>', $url);
+                        return Html::a('<span class="fas fa-pen"></span>', $url, ['style'=>'padding-right:10px;']);
                     },
                     'password' => function ($url, $model) {
-                        return Html::a('<span class="fas fa-lock"></span>', ['/user/password', 'id'=> $model->id]);
+                        return Html::a('<span class="fas fa-lock"></span>', ['/user/password', 'id'=> $model->id], ['style'=>'padding-right:10px;']);
+                    },
+                    'company' => function ($url, $model) {
+                        return Html::a('<span class="fas fa-industry"></span>', ['/user-company', 'userId'=> $model->id]);
                     },
                 ],
             ]
